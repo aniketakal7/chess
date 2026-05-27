@@ -1,0 +1,10 @@
+# Dependency directories
+node_modules/
+
+# Local databases/data
+db/db.json
+
+# Editor / OS files
+.vscode/
+.DS_Store
+Thumbs.db

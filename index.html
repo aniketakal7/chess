@@ -6,7 +6,7 @@
     <meta name="description" content="Premium Chess - Play online multiplayer chess, challenge AI, compete on leaderboards. Features themes, timed games, ELO ratings, and more.">
     <title>Premium Chess — Online Multiplayer</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         /* ═══════════════════════════════════════════════════
            DESIGN SYSTEM — CSS Custom Properties (Themes)
@@ -1422,6 +1422,12 @@
         return false;
     };
 
+    // Configuration for Split Architecture (Vercel Frontend + Render Backend)
+    // If you host the frontend on Vercel, change the URL below to your Render backend URL.
+    const BACKEND_URL = window.location.hostname.includes('vercel.app')
+        ? 'https://your-chess-backend.onrender.com' // <-- CHANGE THIS to your deployed Render URL
+        : '';
+
     /* ═══════════════════════════════════════════════════════════
        1. SVG PIECE LIBRARY
        ═══════════════════════════════════════════════════════════ */
@@ -2772,7 +2778,7 @@
         var password = document.getElementById('login-password').value;
         document.getElementById('auth-error').textContent = '';
 
-        fetch('/api/auth/login', {
+        fetch(BACKEND_URL + '/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username, password: password })
@@ -2793,7 +2799,7 @@
         var password = document.getElementById('reg-password').value;
         document.getElementById('auth-error').textContent = '';
 
-        fetch('/api/auth/register', {
+        fetch(BACKEND_URL + '/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username, email: email, password: password })
@@ -2808,7 +2814,7 @@
     }
 
     function handleLogout() {
-        fetch('/api/auth/logout', { method: 'POST' })
+        fetch(BACKEND_URL + '/api/auth/logout', { method: 'POST' })
         .then(function() {
             currentUser = null;
             if (socket) { socket.disconnect(); socket = null; }
@@ -2823,7 +2829,7 @@
     }
 
     function checkSession() {
-        fetch('/api/auth/me')
+        fetch(BACKEND_URL + '/api/auth/me')
         .then(function(res) {
             if (!res.ok) throw new Error('Not authenticated');
             return res.json();
@@ -2877,7 +2883,7 @@
     }
 
     function loadLeaderboard() {
-        fetch('/api/leaderboard?limit=10')
+        fetch(BACKEND_URL + '/api/leaderboard?limit=10')
         .then(function(res) { return res.json(); })
         .then(function(data) {
             var tbody = document.getElementById('lb-body');
@@ -2923,7 +2929,7 @@
     function connectSocket() {
         if (socket && socket.connected) return;
 
-        socket = io({
+        socket = io(BACKEND_URL, {
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: 5,
@@ -3248,7 +3254,7 @@
 
         if (currentUser) {
             // Refresh user data
-            fetch('/api/auth/me')
+            fetch(BACKEND_URL + '/api/auth/me')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.user) currentUser = data.user;
